@@ -31,16 +31,33 @@ const dbConnect = async () => {
 }
 dbConnect()
 
-async function run() {
-    try {
-        await client.connect();
-        await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
-    } finally {
-        await client.close();
-    }
-}
-run().catch(console.dir);
+const touristSpotCollection = client.db("TravelDB").collection("TouristSpot")
+const userCollection = client.db("TravelDB").collection("user")
+
+
+// TouristSpot related api
+
+app.post('/touristSpot', async (req, res) => {
+    const newSpot = req.body;
+    console.log(newSpot);
+    const result = await touristSpotCollection.insertOne(newSpot)
+    res.send(result)
+})
+
+app.get('/touristSpot', async(req, res)=>{
+    const find = touristSpotCollection.find()
+    const result = await find.toArray()
+    res.send(result)
+})
+
+
+
+// user related api
+
+
+
+
+
 
 
 
