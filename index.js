@@ -33,6 +33,7 @@ dbConnect()
 
 const touristSpotCollection = client.db("TravelDB").collection("TouristSpot")
 const userCollection = client.db("TravelDB").collection("user")
+const countriesCollection = client.db("TravelDB").collection("countries")
 
 
 // TouristSpot related api
@@ -68,10 +69,23 @@ app.get('/users', async (req, res) => {
 })
 
 
+// country related api for home page
+
+app.post('/country', async (req, res) => {
+    const newUser = req.body
+    console.log(newUser);
+    const result = await countriesCollection.insertOne(newUser)
+    res.send(result)
+})
+
+app.get('/country', async (req, res) => {
+    const findUser = countriesCollection.find()
+    const result = await findUser.toArray()
+    res.send(result)
+})
 
 
-
-
+// 
 app.get('/', async (req, res) => {
     res.send('Travel Europe server in running')
 })
