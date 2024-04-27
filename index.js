@@ -44,7 +44,7 @@ app.post('/touristSpot', async (req, res) => {
     res.send(result)
 })
 
-app.get('/touristSpot', async(req, res)=>{
+app.get('/touristSpot', async (req, res) => {
     const find = touristSpotCollection.find()
     const result = await find.toArray()
     res.send(result)
@@ -54,7 +54,18 @@ app.get('/touristSpot', async(req, res)=>{
 
 // user related api
 
+app.post('/users', async (req, res) => {
+    const newUser = req.body
+    console.log(newUser);
+    const result = await userCollection.insertOne(newUser)
+    res.send(result)
+})
 
+app.get('/users', async (req, res) => {
+    const findUser = userCollection.find()
+    const result = await findUser.toArray()
+    res.send(result)
+})
 
 
 
