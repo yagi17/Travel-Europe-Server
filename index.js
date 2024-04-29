@@ -11,8 +11,14 @@ const app = express();
 // Set the server port from environment or use 5000 as default
 const port = process.env.PORT || 5000;
 
+
+const allowedOrigins = ['http://localhost:5173', 'https://your-frontend-domain.com'];
+
 // Middleware to enable CORS and JSON body parsing
-app.use(cors());
+app.use(cors({
+    origin: allowedOrigins
+}));
+// app.use(cors(allowedOrigins));
 app.use(express.json());
 
 // MongoDB connection URI from environment variables
@@ -30,10 +36,10 @@ const client = new MongoClient(uri, {
 // Async function to test MongoDB connection
 const dbConnect = async () => {
     try {
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("You successfully connected to MongoDB!");
     } catch (error) {
-        console.error("Failed to connect to MongoDB", error);
+        console.error("Failed to connect to MongoDB", error.massage);
     }
 };
 dbConnect();  // Call the dbConnect function to connect to the database
@@ -46,30 +52,65 @@ const countriesCollection = client.db("TravelDB").collection("countries");
 // API endpoint to add a new tourist spot
 app.post('/touristSpot', async (req, res) => {
     const newSpot = req.body;
-    console.log(newSpot);
+    // console.log(newSpot);
     const result = await touristSpotCollection.insertOne(newSpot);
     res.send(result);
 });
 
+app.put('/touristSpot/:id', async (req, res) => {
+    const id = req.params.id
+    const query = { _id: new ObjectId(id) }
+    const updateDetails = req.body
+    const coffee = {
+        $set: {
+            country: updateDetails.country,
+            spotName: updateDetails.spotName,
+            totalVisitorsPerYear: updateDetails.totalVisitorsPerYear,
+            photo: updateDetails.photo,
+            cost: updateDetails.cost,
+            season: updateDetails.season,
+            days: updateDetails.days,
+        }
+    }
+    const result = await touristSpotCollection.updateOne(query, coffee)
+    res.send(result)
+})
+
 // API endpoint to retrieve all tourist spots
 app.get('/touristSpot', async (req, res) => {
-    const cursor = touristSpotCollection.find({});
+    const cursor = touristSpotCollection.find();
     const result = await cursor.toArray();
     res.send(result);
 });
 
+// get data from email
+app.get('/touristSpot/myList/:email', async (req, res) => {
+    const email = req.params.email
+    const query = { userEmail: email }
+    const result = await touristSpotCollection.find(query).toArray()
+    res.send(result)
+})
+
+// API endpoint to delete a tourist spot by ID
+app.get('/touristSpot/:id', async (req, res) => {
+    const id = req.params.id
+    const query = { _id: new ObjectId(id) }
+    const result = await touristSpotCollection.find(query).toArray()
+    res.send(result)
+})
+
 // API endpoint to delete a tourist spot by ID
 app.delete('/touristSpot/:id', async (req, res) => {
-    const id = req.params.id;
-    const query = { _id: new ObjectId(id) };
-    const result = await touristSpotCollection.deleteOne(query);
-    res.send(result);
-});
+    const id = req.params.id
+    const query = { _id: new ObjectId(id) }
+    const result = await touristSpotCollection.deleteOne(query)
+    res.send(result)
+})
 
 // API endpoint to add a new user
 app.post('/users', async (req, res) => {
     const newUser = req.body;
-    console.log(newUser);
+    // console.log(newUser);
     const result = await userCollection.insertOne(newUser);
     res.send(result);
 });
@@ -84,7 +125,7 @@ app.get('/users', async (req, res) => {
 // API endpoint to add a new country
 app.post('/country', async (req, res) => {
     const newCountry = req.body;
-    console.log(newCountry);
+    // console.log(newCountry);
     const result = await countriesCollection.insertOne(newCountry);
     res.send(result);
 });
@@ -95,6 +136,16 @@ app.get('/country', async (req, res) => {
     const result = await cursor.toArray();
     res.send(result);
 });
+
+
+// cant get the data
+app.get('/country/:name', async (req, res) => {
+    const name = req.params.name
+    const query = { name: name }
+    const result = await countriesCollection.find(query).toArray()
+    res.send(result)
+})
+
 
 // Root endpoint to check server status
 app.get('/', async (req, res) => {
